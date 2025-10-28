@@ -1,0 +1,136 @@
+.albody .accordion{
+	margin-bottom: 40px;
+	border-radius: 40px;
+    background: $dark;
+    padding:60px;
+    position: relative;
+    overflow: hidden;
+	background: $bg;
+    &:before{
+        content:'';
+        display:table;
+        position: absolute;
+        width: 122px;
+        height: 122px;
+        right: -60px;
+        bottom: -60px;
+        background: #F0245E;
+        filter: blur(60px);
+    }
+}
+
+@media(min-width:1200px){
+	.accordion{
+		.item{
+			label{
+				span{
+					transition: color 0.5s ease;
+				}
+			}
+			&:has(> input:hover){
+				label{
+					span{
+						color:$lightBlue;
+					}
+				}
+			}
+		}
+	}
+}
+
+.accordion{
+	width:-webkit-fill-available;
+	.item{
+		display:grid;
+		grid-template-columns: 1fr;
+		grid-template-rows: 73px auto;
+		position: relative;
+		&:not(:last-child){
+			&:not(:has(input:checked)) {
+				label {
+					border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+				}
+			}
+		}
+		input{
+			@include checkNull;
+			grid-row:1;
+			grid-column: 1;
+			&:checked ~ label{
+				&:before{
+					content:'-';
+				}
+			}
+			&:not(:checked) ~ label{
+				&:before{
+					content:'+';
+				}
+			}
+			&:checked ~ .text{
+				height:initial;
+				opacity:1;
+			}
+			&:not(:checked) ~ .text{
+				height:0;
+				opacity:0;
+				z-index: -1;
+				pointer-events: none;
+			}
+		}
+		.text{
+			grid-row:2;
+			grid-column: 1;
+			width:100%;
+			margin:0 auto;
+			text-align: left;
+			transition: opacity 0.5s ease, height 0.5s ease;
+			padding-top:30px;
+			p{
+				text-align: left;
+				padding-bottom: 16px;
+				@include textFont(18px,28px,300);
+				margin-bottom: 0px;
+			}
+		}
+		label{
+			width:100%;
+			height:100%;
+			grid-row:1;
+			grid-column: 1;
+			display:grid;
+			align-items: center;
+			transition: color 0.5s ease;
+			grid-template-columns: 20px 1fr 20px;
+			grid-column-gap: 10px;
+			border-bottom: 1px solid transparent;
+			span{
+				@include simpleFont(24px,auto,400);
+				//font-family: $play;
+				grid-column: 2;
+				grid-row: 1;
+				color:#fff;
+			}
+			&:after{
+				grid-column: 1;
+				grid-row: 1;
+				content:'';
+				background: $green;
+				width:10px;
+				height:10px;
+				border-radius: 10px;
+			}
+			&:before{
+				grid-column: 3;
+				grid-row:1;
+				font-size: 22px;
+				width: 100%;
+				height: 100%;
+				display: grid;
+				text-align: center;
+				align-items: center;
+				font-weight: 700;
+				color: $green;
+			}
+		}
+	}
+}
