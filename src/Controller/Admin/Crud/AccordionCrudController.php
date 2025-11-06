@@ -72,17 +72,17 @@ class AccordionCrudController extends AbstractCrudController
         /**
          * on forms
          */
-        yield FormField::addTab($this->translateService->translateSzavak("options"));
-            yield BooleanField::new('active',$this->translateService->translateSzavak("active"))
+        yield FormField::addTab($this->translateService->translateWords("options"));
+            yield BooleanField::new('active',$this->translateService->translateWords("active"))
                 ->renderAsSwitch(true)
                 ->setFormTypeOptions(['data' => true])
                 ->onlyOnForms();
-            yield TextField::new('name', $this->translateService->translateSzavak("name"))
+            yield TextField::new('name', $this->translateService->translateWords("name"))
                 ->hideOnIndex();
         
         if ($pageName === Crud::PAGE_EDIT) {
-            yield FormField::addTab($this->translateService->translateSzavak("accordion_items","Accordion items"));
-                yield AssociationField::new('children', $this->translateService->translateSzavak("accordion_items","Accordion items"))
+            yield FormField::addTab($this->translateService->translateWords("accordion_items","Accordion items"));
+                yield AssociationField::new('children', $this->translateService->translateWords("accordion_items","Accordion items"))
                     ->setRequired(false)
                     ->hideOnIndex();
         }
@@ -90,7 +90,7 @@ class AccordionCrudController extends AbstractCrudController
         /**
          * index
          */
-        yield TextField::new('name', $this->translateService->translateSzavak("name"))
+        yield TextField::new('name', $this->translateService->translateWords("name"))
             ->formatValue(function ($value, $entity) {
                 $url = $this->adminUrlGenerator
                     ->setController(self::class)
@@ -102,9 +102,9 @@ class AccordionCrudController extends AbstractCrudController
             })
             ->onlyOnIndex()
             ->renderAsHtml();
-        yield DateField::new('created_at', $this->translateService->translateSzavak("created_at","created"))->hideOnForm();
-        yield DateField::new('modified_at',$this->translateService->translateSzavak("modified_at","modified"))->hideOnForm();
-        yield BooleanField::new('active', $this->translateService->translateSzavak("active"))
+        yield DateField::new('created_at', $this->translateService->translateWords("created_at","created"))->hideOnForm();
+        yield DateField::new('modified_at',$this->translateService->translateWords("modified_at","modified"))->hideOnForm();
+        yield BooleanField::new('active', $this->translateService->translateWords("active"))
             ->renderAsSwitch(true)
             ->onlyOnIndex();
     }

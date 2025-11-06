@@ -96,29 +96,60 @@ class AccordionItemCrudController extends AbstractCrudController
         $this->getContext()->getRequest()->setLocale($this->lang);
         $this->translator->getCatalogue($this->lang);
         $this->translator->setLocale($this->lang);
+        
         /**
          * on forms
          */
-        yield FormField::addTab($this->translateService->translateSzavak("options"));
-            yield BooleanField::new('active',$this->translateService->translateSzavak("active"))
+        yield FormField::addTab($this->translateService->translateWords("options"));
+            yield BooleanField::new('active',$this->translateService->translateWords("active"))
                 ->renderAsSwitch(true)
                 ->setFormTypeOptions(['data' => true])
                 ->onlyOnForms();
 
-        yield FormField::addTab($this->translateService->translateSzavak($this->langService->getDefaultObject()->getName()));
-            yield TextField::new('name_'.$this->langService->getDefault(), $this->translateService->translateSzavak("name"))
+        // ✅ Default language tab - use custom getter/setter
+        yield FormField::addTab($this->translateService->translateWords($this->langService->getDefaultObject()->getName()));
+            yield TextField::new('name', $this->translateService->translateWords("name"))
+                ->setFormTypeOption('getter', function(AccordionItem $entity) {
+                    return $entity->getName($this->langService->getDefault());
+                })
+                ->setFormTypeOption('setter', function(AccordionItem &$entity, $value) {
+                    $entity->setName($value, $this->langService->getDefault());
+                })
                 ->hideOnIndex();
-            yield Field::new('text_'.$this->langService->getDefault(), $this->translateService->translateSzavak("text"))
+            yield Field::new('text', $this->translateService->translateWords("text"))
                 ->setFormType(CKEditorType::class)
+                ->setFormTypeOption('getter', function(AccordionItem $entity) {
+                    return $entity->getText($this->langService->getDefault());
+                })
+                ->setFormTypeOption('setter', function(AccordionItem &$entity, $value) {
+                    $entity->setText($value, $this->langService->getDefault());
+                })
                 ->onlyOnForms();
         
+        // ✅ Other language tabs - use custom getter/setter for each
         foreach($this->langService->getLangs() as $lang){
             if(!$lang->isDefault()){
-                yield FormField::addTab($this->translateService->translateSzavak($lang->getName()));
-                yield TextField::new('name_'.$lang->getCode(), $this->translateService->translateSzavak("name"))
+                $langCode = $lang->getCode();
+                
+                yield FormField::addTab($this->translateService->translateWords($lang->getName()));
+                
+                yield TextField::new('name_' . $langCode, $this->translateService->translateWords("name"))
+                    ->setFormTypeOption('getter', function(AccordionItem $entity) use ($langCode) {
+                        return $entity->getName($langCode);
+                    })
+                    ->setFormTypeOption('setter', function(AccordionItem &$entity, $value) use ($langCode) {
+                        $entity->setName($value, $langCode);
+                    })
                     ->hideOnIndex();
-                yield Field::new('text_'.$lang->getCode(), $this->translateService->translateSzavak("text"))
+                    
+                yield Field::new('text_' . $langCode, $this->translateService->translateWords("text"))
                     ->setFormType(CKEditorType::class)
+                    ->setFormTypeOption('getter', function(AccordionItem $entity) use ($langCode) {
+                        return $entity->getText($langCode);
+                    })
+                    ->setFormTypeOption('setter', function(AccordionItem &$entity, $value) use ($langCode) {
+                        $entity->setText($value, $langCode);
+                    })
                     ->onlyOnForms();
             }
         }
@@ -126,28 +157,30 @@ class AccordionItemCrudController extends AbstractCrudController
         /**
          * index
          */
-        yield TextField::new('name_'.$this->langService->getDefault(), $this->translateService->translateSzavak("name"))
-            ->formatValue(function ($value, $entity) {
+        yield TextField::new('name', $this->translateService->translateWords("name"))
+            ->formatValue(function ($value, AccordionItem $entity) {
+                $default = $this->langService->getDefault();
+                $name = $entity->getName($default);
+                
                 $url = $this->adminUrlGenerator
                     ->setController(self::class)
                     ->setAction('edit')
                     ->setEntityId($entity->getId())
                     ->generateUrl();
 
-                return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($value));
+                return sprintf('<a href="%s">%s</a>', $url, htmlspecialchars($name));
             })
             ->onlyOnIndex()
             ->renderAsHtml();
-        yield DateField::new('created_at', $this->translateService->translateSzavak("created_at","created"))->hideOnForm();
-        yield DateField::new('modified_at',$this->translateService->translateSzavak("modified_at","modified"))->hideOnForm();
-        yield BooleanField::new('active', $this->translateService->translateSzavak("active"))
+        yield DateField::new('created_at', $this->translateService->translateWords("created_at","created"))->hideOnForm();
+        yield DateField::new('modified_at',$this->translateService->translateWords("modified_at","modified"))->hideOnForm();
+        yield BooleanField::new('active', $this->translateService->translateWords("active"))
             ->renderAsSwitch(true)
             ->onlyOnIndex();
     }
 
     public function configureCrud(Crud $crud): Crud
     {
-
         return $crud
             ->addFormTheme('@FOSCKEditor/Form/ckeditor_widget.html.twig')
             ->addFormTheme('@EasyAdmin/crud/form_theme.html.twig')
@@ -158,12 +191,9 @@ class AccordionItemCrudController extends AbstractCrudController
 
     public function new(AdminContext $context): KeyValueStore
     {
-        $response = parent::new($context); // returns KeyValueStore
+        $response = parent::new($context);
         $request = $this->requestStack->getCurrentRequest();
         $id = $request->query->get('parent');
-
-
-        //$entity = $this->entityManager->getRepository(\App\Entity\Accordion::class)->find($id);
 
         $url = $this->router->generate('admin_accordion_item_ajax_create', [
             'parent' => $id,
@@ -201,7 +231,7 @@ class AccordionItemCrudController extends AbstractCrudController
                 $this->entityManager->persist($entity);
                 $this->entityManager->flush();
 
-                $this->addFlash('success', $this->translateService->translateSzavak("success_upload_accordion","Accordion uploaded successfully"));
+                $this->addFlash('success', $this->translateService->translateWords("success_upload_accordion","Accordion uploaded successfully"));
 
                 return new JsonResponse(['success' => true, 'id' => $entity->getId()]);
             }
@@ -213,10 +243,9 @@ class AccordionItemCrudController extends AbstractCrudController
         return new JsonResponse([
             'success' => false,
             'message' => 'Invalid request',
-            'request_data' => $request->request->all(), // POST data
+            'request_data' => $request->request->all(),
         ], 400);
     }
-
 
     private function buildAccordionItemForm(AccordionItem $entity)
     {
@@ -242,5 +271,4 @@ class AccordionItemCrudController extends AbstractCrudController
 
         return $formBuilder->getForm();
     }
-
 }

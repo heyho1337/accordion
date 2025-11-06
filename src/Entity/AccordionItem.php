@@ -14,22 +14,14 @@ class AccordionItem
     #[ORM\Column]
     private ?int $id = null;
 
-    private ?string $name = null;
+    private static string $currentLang = 'en';
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $name_hu = null;
+    // JSON translation storage
+    #[ORM\Column(type: Types::JSON)]
+    private array $name = [];
 
-    #[ORM\Column(length: 255, nullable: true)]
-    private ?string $name_en = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $text = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $text_hu = null;
-
-    #[ORM\Column(type: Types::TEXT, nullable: true)]
-    private ?string $text_en = null;
+    #[ORM\Column(type: Types::JSON)]
+    private array $text = [];
 
     #[ORM\Column]
     private ?bool $active = null;
@@ -47,80 +39,64 @@ class AccordionItem
     #[ORM\JoinColumn(nullable: false)]
     private ?Accordion $parent = null;
 
+    public function __construct()
+    {
+        $this->name = [];
+        $this->text = [];
+    }
+
     public function getId(): ?int
     {
         return $this->id;
     }
 
-    public function getName(): ?string
+    // Smart getters/setters using current language
+    public function getName(?string $lang = null): ?string
+    {
+        $lang = $lang ?? self::$currentLang;
+        return $this->name[$lang] ?? $this->name['en'] ?? null;
+    }
+
+    public function setName(?string $value, ?string $lang = null): static
+    {
+        $lang = $lang ?? self::$currentLang;
+        $this->name[$lang] = $value;
+        return $this;
+    }
+
+    public function getText(?string $lang = null): ?string
+    {
+        $lang = $lang ?? self::$currentLang;
+        return $this->text[$lang] ?? $this->text['en'] ?? null;
+    }
+
+    public function setText(?string $value, ?string $lang = null): static
+    {
+        $lang = $lang ?? self::$currentLang;
+        $this->text[$lang] = $value;
+        return $this;
+    }
+
+    // Methods to get/set all translations
+    public function getNameTranslations(): array
     {
         return $this->name;
     }
 
-    public function setName(?string $name): static
+    public function setNameTranslations(array $name): static
     {
         $this->name = $name;
-
         return $this;
     }
 
-    public function getNameHu(): ?string
-    {
-        return $this->name_hu;
-    }
-
-    public function setNameHu(?string $name_hu): static
-    {
-        $this->name_hu = $name_hu;
-
-        return $this;
-    }
-
-    public function getNameEn(): ?string
-    {
-        return $this->name_en;
-    }
-
-    public function setNameEn(?string $name_en): static
-    {
-        $this->name_en = $name_en;
-
-        return $this;
-    }
-
-    public function getText(): ?string
+    public function getTextTranslations(): array
     {
         return $this->text;
     }
 
-    public function setText(?string $text): static
+    public function setTextTranslations(array $text): static
     {
         $this->text = $text;
-
-        return $this;
-    }
-
-    public function getTextHu(): ?string
-    {
-        return $this->text_hu;
-    }
-
-    public function setTextHu(?string $text_hu): static
-    {
-        $this->text_hu = $text_hu;
-
-        return $this;
-    }
-
-    public function getTextEn(): ?string
-    {
-        return $this->text_en;
-    }
-
-    public function setTextEn(?string $text_en): static
-    {
-        $this->text_en = $text_en;
-
         return $this;
     }
 
@@ -129,10 +105,9 @@ class AccordionItem
         return $this->active;
     }
 
-    public function setActive(bool $active): static
+    public function setActive(?bool $active): static
     {
         $this->active = $active;
-
         return $this;
     }
 
@@ -144,7 +119,6 @@ class AccordionItem
     public function setModifiedAt(\DateTimeImmutable $modified_at): static
     {
         $this->modified_at = $modified_at;
-
         return $this;
     }
 
@@ -156,7 +130,6 @@ class AccordionItem
     public function setCreatedAt(\DateTimeImmutable $created_at): static
     {
         $this->created_at = $created_at;
-
         return $this;
     }
 
@@ -168,7 +141,6 @@ class AccordionItem
     public function setOrderNum(int $order_num): static
     {
         $this->order_num = $order_num;
-
         return $this;
     }
 
@@ -180,8 +152,17 @@ class AccordionItem
     public function setParent(?Accordion $parent): static
     {
         $this->parent = $parent;
-
         return $this;
+    }
+
+    public static function setCurrentLang(string $lang): void
+    {
+        self::$currentLang = $lang;
+    }
+
+    public static function getCurrentLang(): string
+    {
+        return self::$currentLang;
     }
 
     public function __toString(): string
