@@ -23,7 +23,7 @@
         "symfony": {
             "endpoint": [
                 "flex://defaults",
-                "https://raw.githubusercontent.com/heyho1337/accordion-recipe/main/index.json"
+                "https://raw.githubusercontent.com/heyho1337/accordion-recipe/master/index.json"
             ]
         }
     }
