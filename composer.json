@@ -3,6 +3,7 @@
     "description": "symfony accordion bundle by heyhodesigns",
     "type": "symfony-bundle",
     "license": "MIT",
+    "version": "v1.0.5",
     "autoload": {
         "psr-4": {
             "Heyhodesigns\\Accordion\\": "src/"
